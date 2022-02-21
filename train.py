@@ -7,7 +7,22 @@ from vae import VAE
 def elbo_loss(x, reconstruction_means, q_means, q_covs):
 
 	# do stuff
-	return loss
+
+	# if n is batch size, then
+	# shape of 
+	# x: n, shape_of_1_sample
+	# reconstruction_means: n, num_expectation_samples, shape_of_1_sample
+	# q_means: n, latent_dimension
+	# q_covs: n, latent_dimension, latent_dimension
+	
+	a=torch.mean(torch.square((reconstruction_means-x[:, None, :]).flatten()))
+	b=torch.mean(
+		0.5*torch.sum(
+			torch.diagonal(q_covs, dim1=1, dim2=2)+torch.square(q_means)-1-torch.log(torch.diagonal(q_covs, dim1=1, dim2=2))
+			)
+		)
+
+	return a+b
 
 trainLoader=args["trainLoader"] # a torch.utils.data.DataLoader object
 epochs=args["epochs"]
@@ -46,4 +61,4 @@ for epoch in range(epochs):
 
 
 torch.save(model.state_dict(), pathjoin(args["logging_dir"], "model.pth"))
-print("Done!")
+print("Done! Model saved at {}".format(pathjoin(args["logging_dir"], "model.pth")))
