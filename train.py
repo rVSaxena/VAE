@@ -24,12 +24,14 @@ def elbo_loss(x, reconstruction_means, q_means, q_covs):
 
 	return a+b
 
+device=args["device"]
 trainLoader=args["trainLoader"] # a torch.utils.data.DataLoader object
 epochs=args["epochs"]
-optimizers=args["optimizer"]
-lr_schedulers=args["lr_scheduler"]
+optimizers=args["optimizers"]
+lr_schedulers=args["lr_schedulers"]
 
 model=VAE(
+	args["device"],
 	args["data_dim"],
 	args["latent_dim"],
 	args["encoder_net"],
@@ -39,26 +41,29 @@ model=VAE(
 
 model.train()
 
-for epoch in range(epochs):
-
-	with tqdm(trainLoader) as t:
-
-		t.set_description("Epoch: {}".format(epoch))
+if __name__=='__main__':
 	
-		for x in t:
+	for epoch in range(epochs):
 
-			reconstruction_means, q_means, q_covs=model(x)
-			loss=elbo_loss(x, reconstruction_means, q_means, q_covs)
-			loss.backward()
+		with tqdm(trainLoader) as t:
 
-			for opts in optimizers:
-				opts.step()
+			t.set_description("Epoch: {}".format(epoch))
+		
+			for x in t:
 
-			t.set_postfix(elbo_loss=loss.item())
+				x=x.to(device)
+				reconstruction_means, q_means, q_covs=model(x)
+				loss=elbo_loss(x, reconstruction_means, q_means, q_covs)
+				loss.backward()
 
-		for schs in lr_schedulers:
-			schs.step()
+				for opts in optimizers:
+					opts.step()
+
+				t.set_postfix(elbo_loss=loss.item())
+
+			for schs in lr_schedulers:
+				schs.step()
 
 
-torch.save(model.state_dict(), pathjoin(args["logging_dir"], "model.pth"))
-print("Done! Model saved at {}".format(pathjoin(args["logging_dir"], "model.pth")))
+	torch.save(model.state_dict(), pathjoin(args["logging_dir"], "model.pth"))
+	print("Done! Model saved at {}".format(pathjoin(args["logging_dir"], "model.pth")))
