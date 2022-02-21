@@ -3,6 +3,7 @@ from tqdm import tqdm
 from os.path import join as pathjoin
 from constructs import args
 from vae import VAE
+from os import makedirs
 
 def elbo_loss(x, reconstruction_means, q_means, q_covs):
 
@@ -40,6 +41,7 @@ model=VAE(
 	)
 
 model.train()
+makedirs(pathjoin(args["logging_dir"], "models"), exist_ok=True)
 
 if __name__=='__main__':
 	
@@ -64,6 +66,7 @@ if __name__=='__main__':
 			for schs in lr_schedulers:
 				schs.step()
 
+		torch.save(model.state_dict(), pathjoin(args["logging_dir"], "models", "{}.pth".format(epoch)))
 
-	torch.save(model.state_dict(), pathjoin(args["logging_dir"], "model.pth"))
+	torch.save(model.state_dict(), pathjoin(args["logging_dir"], "final_model.pth"))
 	print("Done! Model saved at {}".format(pathjoin(args["logging_dir"], "model.pth")))
