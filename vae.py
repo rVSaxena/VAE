@@ -6,8 +6,11 @@ class VAE(nn.Module):
 	def __init__(self, data_dimension, latent_dimension, encoder_net, decoder_net, num_expectation_samples=500):
 
 		"""
+		Encoder should output (num_x, 2*latent_dimension)
 		Decoder should expect an input of shape (num_x, num_exepectation_samples, latent_dimension)
 		"""
+
+		# TODO data_dimension is probably not needed so remove that
 
 		super(VAE, self).__init__()
 		self.data_dim=data_dimension
@@ -20,7 +23,7 @@ class VAE(nn.Module):
 
 	def forward(self, x):
 		# The shape of x is supposed to be 
-		# (N, data_dim)
+		# whatever is expected by encoder
 
 		g_stats=self.encoder(x)
 		# Expected shape is (N, 2*latent_dimension) -> mean and the diag element of the cov_mat
