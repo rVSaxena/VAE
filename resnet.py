@@ -22,10 +22,12 @@ class ResidualBlock(nn.Module):
         assert kernel_dim%2==1, "Only odd kernel dimensions supported. Received {}".format(kernel_dim)
 
         super(ResidualBlock, self).__init__()
+        self.downsample=downsample
+
         self.Normalizer1=nn.BatchNorm2d(out_channels)
         self.Normalizer2=nn.BatchNorm2d(out_channels)
 
-        stride=2 if downsample else 1
+        stride=2 if self.downsample else 1
         if self.in_feat_size!=self.out_feat_shape:
             self.SAK=nn.Conv2d(in_channels, out_channels, 1, stride=2)
 
@@ -44,18 +46,16 @@ class ResidualBlock(nn.Module):
         # compute the first block
     
         out=self.conv1(x)
-        if self.Normalizer is not None:
-            out=self.norm1(out)
+        out=self.Normalizer1(out)
         out=self.activation1(out)
 
         # ready the input for addition
-        if self.in_feat_size!=self.out_feat_shape:
+        if self.downsample:
             x=self.SAK(x)
 
         # compute the output
         out=self.conv2(out)+x
-        if self.Normalizer is not None:
-            out=self.norm2(out)
+        out=self.Normalizer2(out)
         out=self.activation2(out)
     
         return out
