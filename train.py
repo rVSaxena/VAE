@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 from tqdm import tqdm
 from os.path import join as pathjoin
 from constructs import args
@@ -19,7 +20,8 @@ def elbo_loss(x, reconstruction_means, q_means, q_covs):
 	a=torch.mean(torch.square((reconstruction_means-x[:, None, :]).flatten()))
 	b=torch.mean(
 		0.5*torch.sum(
-			torch.diagonal(q_covs, dim1=1, dim2=2)+torch.square(q_means)-1-torch.log(torch.diagonal(q_covs, dim1=1, dim2=2))
+			torch.diagonal(q_covs, dim1=1, dim2=2)+torch.square(q_means)-1-torch.log(torch.diagonal(q_covs, dim1=1, dim2=2)),
+			axis=1
 			)
 		)
 
@@ -42,11 +44,14 @@ model=VAE(
 
 model.train()
 makedirs(pathjoin(args["logging_dir"], "models"), exist_ok=True)
+makedirs(pathjoin(args["logging_dir"], "loss_values"), exist_ok=True)
 
 if __name__=='__main__':
 	
 	for epoch in range(epochs):
 
+		lossarr=[]
+		
 		with tqdm(trainLoader) as t:
 
 			t.set_description("Epoch: {}".format(epoch))
@@ -57,7 +62,8 @@ if __name__=='__main__':
 				reconstruction_means, q_means, q_covs=model(x)
 				loss=elbo_loss(x, reconstruction_means, q_means, q_covs)
 				loss.backward()
-
+				lossarr.append(loss.item())
+				
 				for opts in optimizers:
 					opts.step()
 
@@ -67,6 +73,7 @@ if __name__=='__main__':
 				schs.step()
 
 		torch.save(model.state_dict(), pathjoin(args["logging_dir"], "models", "{}.pth".format(epoch)))
+		np.savetxt(pathjoin(args["logging_dir"], "loss_values", "epoch_{}.csv".format(epoch)), lossarr, delimiter=",")
 
 	torch.save(model.state_dict(), pathjoin(args["logging_dir"], "final_model.pth"))
 	print("Done! Model saved at {}".format(pathjoin(args["logging_dir"], "model.pth")))
