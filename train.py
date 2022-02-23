@@ -6,7 +6,7 @@ from constructs import args
 from vae import VAE
 from os import makedirs
 
-def elbo_loss(x, reconstruction_means, q_means, q_covs):
+def elbo_loss(x, reconstruction_means, q_means, q_covs, epoch, max_epochs):
 
 	# do stuff
 
@@ -17,6 +17,8 @@ def elbo_loss(x, reconstruction_means, q_means, q_covs):
 	# q_means: n, latent_dimension
 	# q_covs: n, latent_dimension, latent_dimension
 	
+	epoch_for_full_kl_wt=int(0.6*max_epochs)
+	kl_mult=min(1.0, round(float(epoch)/float(epoch_for_full_kl_wt), 1))
 	a=torch.mean(torch.square((reconstruction_means-x[:, None, :]).flatten()))
 	b=torch.mean(
 		0.5*torch.sum(
@@ -25,7 +27,7 @@ def elbo_loss(x, reconstruction_means, q_means, q_covs):
 			)
 		)
 
-	return a+b
+	return a+kl_mult*b
 
 device=args["device"]
 trainLoader=args["trainLoader"] # a torch.utils.data.DataLoader object
