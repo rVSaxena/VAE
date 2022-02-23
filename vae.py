@@ -36,7 +36,7 @@ class VAE(nn.Module):
 		with torch.no_grad():
 			epsilons=torch.normal(0, 1, size=(mean.shape[0], self.num_expectation_samples, self.latent_dim)).double().to(self.device)
 	
-		all_z=(cov@epsilons.swapaxes(1, 2)).swapaxes(1, 2)+mean[:, None, :]
+		all_z=(torch.sqrt(cov)@epsilons.swapaxes(1, 2)).swapaxes(1, 2)+mean[:, None, :]
 
 		output=self.decoder(all_z)
 
