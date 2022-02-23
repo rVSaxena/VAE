@@ -62,7 +62,7 @@ if __name__=='__main__':
 
 				x=x.to(device)
 				reconstruction_means, q_means, q_covs=model(x)
-				loss=elbo_loss(x, reconstruction_means, q_means, q_covs)
+				loss=elbo_loss(x, reconstruction_means, q_means, q_covs, epoch, epochs)
 				loss.backward()
 				lossarr.append(loss.item())
 				
