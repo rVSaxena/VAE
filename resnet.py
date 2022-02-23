@@ -16,6 +16,7 @@ class ResidualBlock(nn.Module):
         """
         in_channels: int
         out_channels: int
+        downsample: Boolean
         kernel_dim: int
         
         """
