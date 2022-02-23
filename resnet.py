@@ -61,7 +61,7 @@ class ResidualBlock(nn.Module):
 
         # compute the output
         out=self.conv2(out)+x
-        out=self.Normalizer2(out)
+        out=self.Normalizer2(out)+x
         out=self.activation2(out)
         
         return out
