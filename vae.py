@@ -27,6 +27,13 @@ class VAE(nn.Module):
 		# whatever is expected by encoder
 
 		g_stats=self.encoder(x)
+		
+		# with open('bla.txt', 'a') as f:
+		# 	for i in range(g_stats.shape[0]):
+		# 		for j in range(g_stats.shape[1]):
+		# 			f.write(" {}".format(g_stats[i, j].item()))
+		# 		f.write("\n")
+
 		# Expected shape is (N, 2*latent_dimension) -> mean and the diag element of the cov_mat
 		# g_stats contains the numbers needed to construct the mean and cov matrix,
 		# for use in re-parameterization. cov mat is chosen to be diagonal
