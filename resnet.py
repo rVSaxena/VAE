@@ -11,7 +11,7 @@ class ResidualBlock(nn.Module):
     In the latter case, input_shape must be even in all dimensions (expect the batch dimension)
     """
 
-    def __init__(self, in_channels, out_channels, downsample, kernel_dim=3, **kwargs):
+    def __init__(self, in_channels, out_channels, downsample, kernel_dim=3, normalizer=nn.BatchNorm2d, **kwargs):
         
         """
         in_channels: int
@@ -19,6 +19,7 @@ class ResidualBlock(nn.Module):
         downsample: Boolean
         kernel_dim: int
         
+        use nn.Identity to skip normalization
         """
         assert kernel_dim%2==1, "Only odd kernel dimensions supported. Received {}".format(kernel_dim)
 
@@ -27,17 +28,18 @@ class ResidualBlock(nn.Module):
         self.in_channels=in_channels
         self.out_channels=out_channels
 
-        self.Normalizer1=nn.BatchNorm2d(out_channels)
-        self.Normalizer2=nn.BatchNorm2d(out_channels)
+        self.Normalizer1=normalizer(out_channels)
+        self.Normalizer2=normalizer(out_channels)
 
-        stride=2 if self.downsample else 1
+        # SAK is shape adjusting kernel 
         if self.downsample or (in_channels!=out_channels):
             if not self.downsample:
-                self.SAK=nn.Conv2d(in_channels, out_channels, 1, stride=1)
+                self.SAK=nn.Conv2d(in_channels, out_channels, 1, stride=1, bias=False)
             else:
-                self.SAK=nn.Conv2d(in_channels, out_channels, 1, stride=2)
+                self.SAK=nn.Conv2d(in_channels, out_channels, 1, stride=2, bias=False)
 
 
+        stride=2 if self.downsample else 1
         self.conv1=nn.Conv2d(in_channels, out_channels, kernel_dim, stride=stride, padding=int((kernel_dim-1)/2))
         self.conv2=nn.Conv2d(out_channels, out_channels, kernel_dim, padding=int((kernel_dim-1)/2)) # this one maintains shape. So stride 1 and padd=(k-1)/2 work
         self.activation1=nn.ReLU(inplace=True)
