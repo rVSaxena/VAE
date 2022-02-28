@@ -17,17 +17,16 @@ def elbo_loss(x, reconstruction_means, q_means, q_covs, epoch, max_epochs):
 	# q_means: n, latent_dimension
 	# q_covs: n, latent_dimension, latent_dimension
 	
-	epoch_for_full_kl_wt=int(0.6*max_epochs)
-	kl_mult=min(1.0, round(float(epoch)/float(epoch_for_full_kl_wt), 1))
-	a=torch.mean(torch.square((reconstruction_means-x[:, None, :]).flatten()))
+	epoch_for_full_kl_wt=int(0.8*max_epochs)
+	a=torch.sqrt(torch.mean(torch.square((reconstruction_means-x[:, None, :]).flatten())))
 	b=torch.mean(
 		0.5*torch.sum(
-			torch.diagonal(q_covs, dim1=1, dim2=2)+torch.square(q_means)-1-torch.log(torch.diagonal(q_covs, dim1=1, dim2=2)),
+			torch.diagonal(q_covs, dim1=1, dim2=2)+torch.square(q_means)-1-torch.log(torch.diagonal(q_covs, dim1=1, dim2=2)).clamp(min=0.25),
 			axis=1
 			)
 		)
 
-	return a+kl_mult*b
+	return a+b
 
 device=args["device"]
 trainLoader=args["trainLoader"] # a torch.utils.data.DataLoader object
@@ -59,6 +58,9 @@ if __name__=='__main__':
 			t.set_description("Epoch: {}".format(epoch))
 		
 			for x in t:
+
+				for opts in optimizers:
+					opts.zero_grad()
 
 				x=x.to(device)
 				reconstruction_means, q_means, q_covs=model(x)
