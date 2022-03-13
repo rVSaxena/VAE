@@ -28,11 +28,11 @@ class VAE(nn.Module):
 
 		g_stats=self.encoder(x)
 		
-		# with open('bla.txt', 'a') as f:
-		# 	for i in range(g_stats.shape[0]):
-		# 		for j in range(g_stats.shape[1]):
-		# 			f.write(" {}".format(g_stats[i, j].item()))
-		# 		f.write("\n")
+		with open('bla.txt', 'a') as f:
+			for i in range(g_stats.shape[0]):
+				for j in range(g_stats.shape[1]):
+					f.write(" {}".format(g_stats[i, j].item()))
+				f.write("\n")
 
 		# Expected shape is (N, 2*latent_dimension) -> mean and the diag element of the cov_mat
 		# g_stats contains the numbers needed to construct the mean and cov matrix,
@@ -41,7 +41,7 @@ class VAE(nn.Module):
 		mean, cov=g_stats[:, :self.latent_dim], torch.diag_embed(torch.exp(g_stats[:, self.latent_dim:]))
 		
 		with torch.no_grad():
-			epsilons=torch.normal(0, 1, size=(mean.shape[0], self.num_expectation_samples, self.latent_dim)).double().to(self.device)
+			epsilons=torch.normal(0, 1, size=(mean.shape[0], self.num_expectation_samples, self.latent_dim)).type(torch.float32).to(self.device)
 	
 		all_z=(torch.sqrt(cov)@epsilons.swapaxes(1, 2)).swapaxes(1, 2)+mean[:, None, :]
 
