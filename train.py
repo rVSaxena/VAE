@@ -18,10 +18,11 @@ def elbo_loss(x, reconstruction_means, q_means, q_covs, epoch, max_epochs):
 	# q_covs: n, latent_dimension, latent_dimension
 	
 	epoch_for_full_kl_wt=int(0.8*max_epochs)
+	clamping_val=0.25-0.03*int(epoch/3)
 	a=torch.sqrt(torch.mean(torch.square((reconstruction_means-x[:, None, :]).flatten())))
 	b=torch.mean(
 		0.5*torch.sum(
-			torch.diagonal(q_covs, dim1=1, dim2=2)+torch.square(q_means)-1-torch.log(torch.diagonal(q_covs, dim1=1, dim2=2)).clamp(min=0.25),
+			torch.diagonal(q_covs, dim1=1, dim2=2)+torch.square(q_means)-1-torch.log(torch.diagonal(q_covs, dim1=1, dim2=2)).clamp(min=clamping_val),
 			axis=1
 			)
 		)
@@ -44,6 +45,7 @@ model=VAE(
 	)
 
 model.train()
+
 makedirs(pathjoin(args["logging_dir"], "models"), exist_ok=True)
 makedirs(pathjoin(args["logging_dir"], "loss_values"), exist_ok=True)
 
