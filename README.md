@@ -1,6 +1,6 @@
 # VAE
 
-This repository implements a generic and fast template for variational auto-encoders (see arxiv.org/pdf/1906.02691.pdf)
+This is a generic and fast SP float32 implementation of variational auto-encoders.
 
 For a different usage (dataset), just a new constructs file needs to be written.
 
