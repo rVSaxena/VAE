@@ -7,7 +7,7 @@ An example usage on the MNIST dataset is provided.
 For a different usage (dataset), just a new constructs file needs to be written.
 
 ### 2-D latent space:
-![](2dimLat.jpg)
+![](pictures/2dimLat.jpg)
 
 ### 49D latent space:
-![](49dimLat.jpg)
+![](pictures/49dimLat.jpg)
